@@ -54,18 +54,25 @@ window.addEventListener('resize', () => {
 });
 
 // Form submit
-function submitForm() {
+async function submitForm() {
   const name = document.getElementById('formName').value.trim();
   const email = document.getElementById('formEmail').value.trim();
+  const phone = document.getElementById('formPhone').value.trim();
   const message = document.getElementById('formMessage').value.trim();
   const service = document.getElementById('formService').value;
 
+  // Validação
   if (!name || !email || !message || !service) {
-    const inputs = document.querySelectorAll('.form-input, .form-select, .form-textarea');
+    const inputs = document.querySelectorAll(
+      '.form-input, .form-select, .form-textarea'
+    );
+
     inputs.forEach(i => {
       if (!i.value.trim()) {
         i.style.borderColor = 'var(--red)';
-        setTimeout(() => i.style.borderColor = '', 2000);
+        setTimeout(() => {
+          i.style.borderColor = '';
+        }, 2000);
       }
     });
     return;
@@ -73,21 +80,53 @@ function submitForm() {
 
   const submitBtn = document.getElementById('formSubmit');
   const success = document.getElementById('formSuccess');
-  
-  submitBtn.style.display = 'none';
-  success.style.display = 'flex';
-  
-  // Reset form
-  document.getElementById('formName').value = '';
-  document.getElementById('formEmail').value = '';
-  document.getElementById('formPhone').value = '';
-  document.getElementById('formService').value = '';
-  document.getElementById('formMessage').value = '';
 
-  setTimeout(() => {
-    success.style.display = 'none';
+  // Desativa botão durante envio
+  submitBtn.disabled = true;
+  submitBtn.innerText = 'Enviando...';
+
+  try {
+    // Envia email
+    await emailjs.send(
+      'service_w630fqp',      // Seu Service ID
+      'template_bbd8xlf',     // Seu Template ID
+      {
+        from_name: name,
+        from_email: email,
+        phone: phone,
+        service: service,
+        message: message,
+        to_email: 'miro.tipaneque@gmail.com'  // Seu email
+      }
+    );
+
+    // Mostrar sucesso
+    submitBtn.style.display = 'none';
+    success.style.display = 'flex';
+
+    // Limpar formulário
+    document.getElementById('formName').value = '';
+    document.getElementById('formEmail').value = '';
+    document.getElementById('formPhone').value = '';
+    document.getElementById('formService').value = '';
+    document.getElementById('formMessage').value = '';
+
+    // Restaurar botão
+    setTimeout(() => {
+      success.style.display = 'none';
+      submitBtn.style.display = 'flex';
+      submitBtn.disabled = false;
+      submitBtn.innerText = 'Enviar';
+    }, 5000);
+
+  } catch (error) {
+    console.error('Erro ao enviar email:', error);
+    alert('Erro ao enviar mensagem. Tente novamente.');
+    
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'Enviar';
     submitBtn.style.display = 'flex';
-  }, 5000);
+  }
 }
 
 // Add visible class to fade-in elements when they come into view
